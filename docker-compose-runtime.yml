@@ -1,0 +1,48 @@
+services:
+
+  # Nginx for current project
+  nginx:
+    container_name: kfz_nginx
+    #restart: always
+    image: nginx:latest
+    ports:
+      - 80:80
+    #  - 443:443
+    volumes:
+      - ./docker/nginx/hosts:/etc/nginx/conf.d:delegated
+      - ./www:/var/www/html:delegated
+      - ./docker/logs/nginx:/var/log/nginx:delegated
+    #command: [nginx-debug, '-g', 'daemon off;']
+    networks:
+      - backend
+
+  # Php (fpm) for current project
+  php:
+    container_name: kfz_php
+    build:
+      context: ./docker/php
+    environment:
+      XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
+    volumes:
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      - ./www:/var/www/html:delegated
+    #restart: always
+    networks:
+      - backend
+
+  mysql:
+    container_name: kfz_mysql
+    build:
+      context: ./docker/mysql
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - 33006:3306
+    #restart: always
+    networks:
+      - backend
+
+
+networks:
+  backend:
