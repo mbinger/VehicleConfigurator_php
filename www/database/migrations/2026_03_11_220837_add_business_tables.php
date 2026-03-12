@@ -34,6 +34,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             $table->string('name');
+            $table->unsignedBigInteger('fuel_type_id');
             $table->foreign('fuel_type_id')->references('id')->on('fuel_types')->cascadeOnDelete();
             $table->decimal('price');
         });
@@ -44,9 +45,20 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             $table->string('name');
+            $table->unsignedBigInteger('vendor_id');
             $table->foreign('vendor_id')->references('id')->on('vendors');
-            $table->foreign('motor_id')->references('id')->on('motors');
             $table->decimal('price');
+        });
+
+        Schema::create('car_motors', function (Blueprint $table)
+        {
+            $table->id();
+            $table->timestamps();
+            $table->softDeletes();
+            $table->unsignedBigInteger('car_id');
+            $table->foreign('car_id')->references('id')->on('cars');
+            $table->unsignedBigInteger('motor_id');
+            $table->foreign('motor_id')->references('id')->on('motors');
         });
 
         Schema::create('options', function (Blueprint $table)
@@ -66,6 +78,8 @@ return new class extends Migration
             $table->string('first_name')->index();
             $table->string('last_name')->index();
             $table->date('birthday')->index();
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users');
         });
 
         Schema::create('orders', function (Blueprint $table)
@@ -76,7 +90,9 @@ return new class extends Migration
            $table->date('date')->index();
            $table->uuid('number')->unique()->index();
            $table->decimal('price');
+           $table->unsignedBigInteger('customer_id');
            $table->foreign('customer_id')->references('id')->on('customers');
+           $table->unsignedBigInteger('car_id');
            $table->foreign('car_id')->references('id')->on('cars');
            $table->string('color');
            $table->string('status');
@@ -86,7 +102,9 @@ return new class extends Migration
         {
             $table->id();
             $table->timestamps();
+            $table->unsignedBigInteger('order_id');
             $table->foreign('order_id')->references('id')->on('orders')->cascadeOnDelete();
+            $table->unsignedBigInteger('option_id');
             $table->foreign('option_id')->references('id')->on('options');
         });
     }
@@ -100,6 +118,7 @@ return new class extends Migration
         Schema::dropIfExists('vendors');
         Schema::dropIfExists('motors');
         Schema::dropIfExists('cars');
+        Schema::dropIfExists('car_motors');
         Schema::dropIfExists('options');
         Schema::dropIfExists('customers');
         Schema::dropIfExists('orders');
