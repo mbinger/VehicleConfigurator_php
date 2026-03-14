@@ -1,18 +1,21 @@
 <?php
 
 use Livewire\Component;
-use \App\Models\Order;
+use App\Models\Order;
+use Carbon\Carbon;
 
 new class extends Component
 {
     public string $order_number;
     public  $order;
+    public $birthday;
 
     public function mount($number)
     {
         $this->order_number = $number;
         $this->order = Order::where('number', $number)
              ->first();
+        $this->birthday = Carbon::create($this->order->birthday)->format('d.m.Y');
     }
 };
 ?>
@@ -32,7 +35,7 @@ new class extends Component
                 <td>Last name</td><td>{{$order->Customer->last_name}}</td>
             </tr>
             <tr>
-                <td>Birthday</td><td>{{$order->Customer->birthday}}</td>
+                <td>Birthday</td><td>{{$this->birthday}}</td>
             </tr>
             <tr>
                 <td>Car</td>

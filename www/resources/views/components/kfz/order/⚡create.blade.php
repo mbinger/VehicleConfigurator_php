@@ -14,7 +14,7 @@ use \App\Models\OrderOption;
 
 new class extends Component
 {
-    public string $customer_number;
+    public $customer_number;
     public string $firstName;
     public string $lastName;
     public string $birthDate;
@@ -43,7 +43,7 @@ new class extends Component
         $this->options = Option::all()->select('name', 'price', 'id')->toArray();
     }
 
-    public function mount($customer_number)
+    public function mount($customer_number = null)
     {
         $this->$customer_number = $customer_number;
         if ($customer_number)
