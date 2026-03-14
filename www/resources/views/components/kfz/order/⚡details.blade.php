@@ -69,7 +69,15 @@ new class extends Component
         <a href="{{route('kfz.order.edit', ['number' => $order_number])}}">Edit order</a>
         &nbsp; - &nbsp;
         <a href="{{route('kfz.order.delete', ['number' => $order_number])}}">Delete order</a>
+        &nbsp; - &nbsp;
+        <a href="{{route('kfz.customer.orders', ['number' => $order->Customer->number])}}">Customer</a>
+        &nbsp; - &nbsp;
+        <a href="{{route('home')}}">Home</a>
     @else
         <h1>Order Nr. {{$order_number}} not found</h1>
+        <br>
+        <a href="{{route('kfz.order.search')}}">Search order</a>
+        &nbsp; - &nbsp;
+        <a href="{{route('home')}}">Home</a>
     @endif
 </div>

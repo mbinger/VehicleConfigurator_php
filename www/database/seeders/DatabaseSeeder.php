@@ -381,6 +381,7 @@ class DatabaseSeeder extends Seeder
             'first_name' => 'Max',
             'last_name' => 'Musterman',
             'birthday' => '2001-01-01',
+            'number' => '00000000-0000-0000-0000-000000000000',
             'created_at' => $createdAt
         ]);
     }

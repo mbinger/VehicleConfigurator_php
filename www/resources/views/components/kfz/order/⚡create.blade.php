@@ -14,6 +14,7 @@ use \App\Models\OrderOption;
 
 new class extends Component
 {
+    public string $customer_number;
     public string $firstName;
     public string $lastName;
     public string $birthDate;
@@ -35,10 +36,23 @@ new class extends Component
     public $total = 0;
     private $orderNumber;
 
+
     public function __construct()
     {
         $this->vendors = Vendor::all()->pluck('name', 'id')->toArray();
         $this->options = Option::all()->select('name', 'price', 'id')->toArray();
+    }
+
+    public function mount($customer_number)
+    {
+        $this->$customer_number = $customer_number;
+        if ($customer_number)
+        {
+            $customer = Customer::where('number', $customer_number)->firstOrFail();
+            $this->firstName = $customer->first_name;
+            $this->lastName = $customer->last_name;
+            $this->birthDate = Carbon::create($customer->birthday)->format('d.m.Y');
+        }
     }
 
     public function updateVendorId()
@@ -116,41 +130,59 @@ new class extends Component
 
     public function save()
     {
-        $this->validate([
-            'firstName' => 'required|max:255',
-            'lastName' => 'required|max:255',
-            'carId' => 'required',
-            'motorId' => 'required',
-            'color' => 'required|regex:/^[0-9a-fA-F]{6}$/'
-        ]);
-
-        try
+        if ($this->customer_number)
         {
-            $this->birthDateTyped = Carbon::createFromFormat('d.m.Y', $this->birthDate);
+            $this->validate([
+                'carId' => 'required',
+                'motorId' => 'required',
+                'color' => 'required|regex:/^[0-9a-fA-F]{6}$/'
+            ]);
         }
-        catch (\Exception $e)
+        else
         {
-            $this->addError('birthDate', 'Should be dd.mm.yyyy');
-            return;
+            $this->validate([
+                'firstName' => 'required|max:255',
+                'lastName' => 'required|max:255',
+                'carId' => 'required',
+                'motorId' => 'required',
+                'color' => 'required|regex:/^[0-9a-fA-F]{6}$/'
+            ]);
+
+            try
+            {
+                $this->birthDateTyped = Carbon::createFromFormat('d.m.Y', $this->birthDate);
+            }
+            catch (\Exception $e)
+            {
+                $this->addError('birthDate', 'Should be dd.mm.yyyy');
+                return;
+            }
         }
 
         $this->orderNumber = Str::uuid();
 
         DB::transaction(function()
         {
-            $customer = Customer::whereRaw('LOWER(last_name) LIKE LOWER(?)', [$this->lastName])
-                ->whereRaw('LOWER(first_name) LIKE LOWER(?)', [$this->firstName])
-                ->whereDate('birthday', $this->birthDateTyped)
-                ->select('id')
-                ->first();
-
-            if (!$customer)
+            if ($this->customer_number)
             {
-                $customer = Customer::create([
-                    'last_name' => $this->lastName,
-                    'first_name' => $this->firstName,
-                    'birthday' => $this->birthDateTyped
-                ]);
+                $customer = Customer::where('number', $this->customer_number)->firstOrFail();
+            }
+            else
+            {
+                $customer = Customer::whereRaw('LOWER(last_name) LIKE LOWER(?)', [$this->lastName])
+                    ->whereRaw('LOWER(first_name) LIKE LOWER(?)', [$this->firstName])
+                    ->whereDate('birthday', $this->birthDateTyped)
+                    ->select('id')
+                    ->first();
+
+                if (!$customer) {
+                    $customer = Customer::create([
+                        'number' => Str::uuid(),
+                        'last_name' => $this->lastName,
+                        'first_name' => $this->firstName,
+                        'birthday' => $this->birthDateTyped
+                    ]);
+                }
             }
 
             $order = Order::create([
@@ -180,25 +212,40 @@ new class extends Component
     <form wire:submit="save">
         <h3>Customer</h3>
         <br>
-        <label>
-            First name
-            <input type="text" wire:model="firstName">
-            @error('firstName') <span style="color: red;">{{ $message }}</span> @enderror
-        </label>
-        <br>
+        @if ($customer_number)
+            <label>
+                First name {{$firstName}}
+            </label>
+            <br>
 
-        <label>
-            Last name
-            <input type="text" wire:model="lastName">
-            @error('lastName') <span style="color: red;">{{ $message }}</span> @enderror
-        </label>
-        <br>
-        <label>
-            Birth date
-            <input type="text" wire:model="birthDate">
-            @error('birthDate') <span style="color: red;">{{ $message }}</span> @enderror
-        </label>
-        <br>
+            <label>
+                Last name {{$lastName}}
+            </label>
+            <br>
+            <label>
+                Birth date {{$birthDate}}
+            </label>
+        @else
+            <label>
+                First name
+                <input type="text" wire:model="firstName">
+                @error('firstName') <span style="color: red;">{{ $message }}</span> @enderror
+            </label>
+            <br>
+
+            <label>
+                Last name
+                <input type="text" wire:model="lastName">
+                @error('lastName') <span style="color: red;">{{ $message }}</span> @enderror
+            </label>
+            <br>
+            <label>
+                Birth date
+                <input type="text" wire:model="birthDate">
+                @error('birthDate') <span style="color: red;">{{ $message }}</span> @enderror
+            </label>
+            <br>
+        @endif
 
         <h3>Car</h3>
 
@@ -214,7 +261,7 @@ new class extends Component
         <br>
 
         <label>
-            Cars
+            Model
             <select wire:model.live="carId" wire:change="updateCarId">
                 <option value=""></option>
                 @if ($cars)
@@ -281,4 +328,10 @@ new class extends Component
         <br><br>
 
         <button type="submit">Submit order</button>
+        @if ($customer_number)
+        &nbsp; - &nbsp;
+        <a href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">Customer</a>
+        @endif
+        &nbsp; - &nbsp;
+        <a href="{{route('home')}}">Cancel</a>
     </form>

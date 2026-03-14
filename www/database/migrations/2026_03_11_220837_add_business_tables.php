@@ -75,6 +75,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->softDeletes();
+            $table->uuid('number')->unique()->index();
             $table->string('first_name')->index();
             $table->string('last_name')->index();
             $table->date('birthday')->index();
