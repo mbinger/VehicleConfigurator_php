@@ -2,9 +2,20 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::livewire('/create', 'kfz.order.create');
+Route::livewire('/orders/{number}', 'kfz.order.details')->name('kfz.order.details');
+
+Route::get('/', function ()
+{
+    return view('components.kfz.order.⚡index');
 });
+
+/*
+Route::get('/create', function ()
+{
+    return view('components.kfz.order.⚡create');
+});
+*/
 
 Route::middleware([
     'auth:sanctum',

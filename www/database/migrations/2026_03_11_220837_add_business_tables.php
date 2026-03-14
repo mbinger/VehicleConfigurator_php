@@ -78,7 +78,7 @@ return new class extends Migration
             $table->string('first_name')->index();
             $table->string('last_name')->index();
             $table->date('birthday')->index();
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users');
         });
 
@@ -87,13 +87,14 @@ return new class extends Migration
            $table->id();
            $table->timestamps();
            $table->softDeletes();
-           $table->date('date')->index();
            $table->uuid('number')->unique()->index();
            $table->decimal('price');
            $table->unsignedBigInteger('customer_id');
            $table->foreign('customer_id')->references('id')->on('customers');
            $table->unsignedBigInteger('car_id');
            $table->foreign('car_id')->references('id')->on('cars');
+           $table->unsignedBigInteger('motor_id');
+           $table->foreign('motor_id')->references('id')->on('motors');
            $table->string('color');
            $table->string('status');
         });

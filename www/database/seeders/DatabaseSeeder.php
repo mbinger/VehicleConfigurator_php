@@ -347,12 +347,6 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-       DB::table('options')->insert([
-            'name' => 'Air conditioning',
-            'price' => 2000,
-            'created_at' => $createdAt
-       ]);
-
         DB::table('options')->insert([
             'name' => 'A/C',
             'price' => 1000,
@@ -380,6 +374,13 @@ class DatabaseSeeder extends Seeder
         DB::table('options')->insert([
             'name' => 'Navigation',
             'price' => 200,
+            'created_at' => $createdAt
+        ]);
+
+        DB::table('customers')->insert([
+            'first_name' => 'Max',
+            'last_name' => 'Musterman',
+            'birthday' => '2001-01-01',
             'created_at' => $createdAt
         ]);
     }
