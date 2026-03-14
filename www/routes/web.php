@@ -2,20 +2,15 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::livewire('/create', 'kfz.order.create');
-Route::livewire('/orders/{number}', 'kfz.order.details')->name('kfz.order.details');
+Route::livewire('/order/create', 'kfz.order.create');
+Route::livewire('/order/{number}', 'kfz.order.details')->name('kfz.order.details');
+Route::livewire('/order/{number}/edit', 'kfz.order.edit')->name('kfz.order.edit');
+Route::livewire('/order/{number}/delete', 'kfz.order.delete')->name('kfz.order.delete');
 
 Route::get('/', function ()
 {
     return view('components.kfz.order.⚡index');
 });
-
-/*
-Route::get('/create', function ()
-{
-    return view('components.kfz.order.⚡create');
-});
-*/
 
 Route::middleware([
     'auth:sanctum',

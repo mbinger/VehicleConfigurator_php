@@ -8,4 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Motor extends Model
 {
+    public function FuelType(): BelongsTo
+    {
+        return $this->belongsTo(FuelType::class);
+    }
 }
