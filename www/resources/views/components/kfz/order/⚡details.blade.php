@@ -21,7 +21,7 @@ class extends Component
 
         if ($this->order)
         {
-            $this->birthday = Carbon::create($this->order->birthday)->format('d.m.Y');
+            $this->birthday = Carbon::create($this->order->Customer->birthday)->format('d.m.Y');
         }
     }
 };

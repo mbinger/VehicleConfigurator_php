@@ -28,5 +28,7 @@ class extends Component
     @auth
         <br><br>
         <a href="{{url('/dashboard')}}">Dashboard</a>
+        <br><br>
+        <a href="{{url('/admin')}}">Admin</a>
     @endauth
 </div>
