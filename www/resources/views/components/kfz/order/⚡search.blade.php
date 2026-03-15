@@ -1,8 +1,11 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new class extends Component
+new
+#[Layout('layouts::kfz')]
+class extends Component
 {
     public string $order_number = "";
 

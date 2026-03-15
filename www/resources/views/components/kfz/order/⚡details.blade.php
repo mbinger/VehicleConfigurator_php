@@ -1,10 +1,13 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use App\Models\Order;
 use Carbon\Carbon;
 
-new class extends Component
+new
+#[Layout('layouts::kfz')]
+class extends Component
 {
     public string $order_number;
     public  $order;
@@ -15,7 +18,11 @@ new class extends Component
         $this->order_number = $number;
         $this->order = Order::where('number', $number)
              ->first();
-        $this->birthday = Carbon::create($this->order->birthday)->format('d.m.Y');
+
+        if ($this->order)
+        {
+            $this->birthday = Carbon::create($this->order->birthday)->format('d.m.Y');
+        }
     }
 };
 ?>

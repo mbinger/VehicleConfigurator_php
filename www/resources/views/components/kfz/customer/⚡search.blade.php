@@ -1,10 +1,13 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use App\Models\Customer;
 use Carbon\Carbon;
 
-new class extends Component
+new
+#[Layout('layouts::kfz')]
+class extends Component
 {
     public string $firstName = "";
     public string $lastName = "";

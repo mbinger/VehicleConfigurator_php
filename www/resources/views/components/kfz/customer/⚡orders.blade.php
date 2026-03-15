@@ -1,9 +1,12 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use App\Models\Customer;
 
-new class extends Component
+new
+#[Layout('layouts::kfz')]
+class extends Component
 {
     public $customer;
 

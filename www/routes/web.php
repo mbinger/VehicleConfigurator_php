@@ -9,11 +9,7 @@ Route::livewire('/order/{number}/edit', 'kfz.order.edit')->name('kfz.order.edit'
 Route::livewire('/order/{number}/delete', 'kfz.order.delete')->name('kfz.order.delete');
 Route::livewire('/customer/search', 'kfz.customer.search')->name('kfz.customer.search');
 Route::livewire('/customer/{number}', 'kfz.customer.orders')->name('kfz.customer.orders');
-
-Route::get('/', function ()
-{
-    return view('components.kfz.order.⚡index');
-})->name('home');
+Route::livewire('/', 'kfz.order.index')->name('home');
 
 Route::middleware([
     'auth:sanctum',
