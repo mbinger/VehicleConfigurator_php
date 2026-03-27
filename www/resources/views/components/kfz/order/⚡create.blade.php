@@ -157,7 +157,7 @@ class extends Component
             }
             catch (\Exception $e)
             {
-                $this->addError('birthDate', 'Should be dd.mm.yyyy');
+                $this->addError('birthDate', 'Should be correct date dd.mm.yyyy');
                 return;
             }
         }
