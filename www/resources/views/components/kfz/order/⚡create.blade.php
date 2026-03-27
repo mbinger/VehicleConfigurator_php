@@ -12,6 +12,7 @@ use \App\Models\Motor;
 use \App\Models\Option;
 use \App\Models\Order;
 use \App\Models\OrderOption;
+use \App\Kfz\Text;
 
 new
 #[Layout('layouts::kfz')]
@@ -20,7 +21,7 @@ class extends Component
     public $customer_number;
     public string $firstName;
     public string $lastName;
-    public string $birthDate;
+    public string $birthDate = "";
     private $birthDateTyped;
     public $vendors;
     public $vendorId;
@@ -33,7 +34,7 @@ class extends Component
     public $motors;
     public $motorId;
     public $motorPrice;
-    public $color = "FFFFFF";
+    public $color = "";
     public $options;
     public $selectedOptions = [];
     public $total = 0;
@@ -74,6 +75,8 @@ class extends Component
         $this->motorIds = null;
         $this->motors = null;
         $this->motorId = null;
+
+        $this->calculateTotal();
     }
 
     public function updateCarId()
@@ -92,8 +95,9 @@ class extends Component
             $this->fuelTypes = FuelType::whereIn('id', $fuelTypeIds)->pluck('name', 'id')->toArray();
 
             $this->carPrice = Car::where('id', $this->carId)->first()->price;
-            $this->calculateTotal();
         }
+
+        $this->calculateTotal();
     }
 
     public function updateFuelTypeId()
@@ -109,13 +113,20 @@ class extends Component
         {
             $this->motors = null;
         }
-
         $this->motorId = null;
+        $this->calculateTotal();
     }
 
     public function updateMotorId()
     {
-        $this->motorPrice = Motor::where('id', $this->motorId)->first()->price;
+        if ($this->motorId)
+        {
+            $this->motorPrice = Motor::where('id', $this->motorId)->first()->price;
+        }
+        else
+        {
+            $this->motorPrice = null;
+        }
         $this->calculateTotal();
     }
 
@@ -126,8 +137,14 @@ class extends Component
 
     public function calculateTotal()
     {
-        $optionsPrice = Option::whereIn('id', $this->selectedOptions)->sum('price');
-        $this->total = $this->carPrice + $this->motorPrice + $optionsPrice;
+        if ($this->carId && $this->motorId) {
+            $optionsPrice = Option::whereIn('id', $this->selectedOptions)->sum('price');
+            $this->total = $this->carPrice + $this->motorPrice + $optionsPrice;
+        }
+        else
+        {
+            $this->total = 0;
+        }
         return $this->total;
     }
 
@@ -138,7 +155,11 @@ class extends Component
             $this->validate([
                 'carId' => 'required',
                 'motorId' => 'required',
-                'color' => 'required|regex:/^[0-9a-fA-F]{6}$/'
+                'color' => 'required|regex:/^#[0-9a-fA-F]{6}$/'
+            ],[
+                'carId.required' => Text::REQUIRED,
+                'motorId.required' => Text::REQUIRED,
+                'color.required' => Text::REQUIRED
             ]);
         }
         else
@@ -146,9 +167,17 @@ class extends Component
             $this->validate([
                 'firstName' => 'required|max:255',
                 'lastName' => 'required|max:255',
+                'birthDate' => 'required',
                 'carId' => 'required',
                 'motorId' => 'required',
-                'color' => 'required|regex:/^[0-9a-fA-F]{6}$/'
+                'color' => 'required|regex:/^#[0-9a-fA-F]{6}$/'
+            ],[
+                'firstName.required' => Text::REQUIRED,
+                'lastName.required' => Text::REQUIRED,
+                'birthDate.required' => Text::REQUIRED,
+                'carId.required' => Text::REQUIRED,
+                'motorId.required' => Text::REQUIRED,
+                'color.required' => Text::REQUIRED
             ]);
 
             try
@@ -157,7 +186,7 @@ class extends Component
             }
             catch (\Exception $e)
             {
-                $this->addError('birthDate', 'Should be correct date dd.mm.yyyy');
+                $this->addError('birthDate', 'required');
                 return;
             }
         }
@@ -212,129 +241,187 @@ class extends Component
 };
 
 ?>
-    <form wire:submit="save">
-        <h3>Customer</h3>
-        <br>
-        @if ($customer_number)
-            <label>
-                First name {{$firstName}}
-            </label>
-            <br>
+<div class="container-fluid d-flex h-100 justify-content-center align-items-center p-0">
+    <div class="row bg-white shadow-sm">
+        <div class="col border rounded p-4">
+            <form wire:submit="save">
+                <div class="row">
+                    <h1 class="text-center">Create order</h1>
+                    <h3>Customer</h3>
 
-            <label>
-                Last name {{$lastName}}
-            </label>
-            <br>
-            <label>
-                Birth date {{$birthDate}}
-            </label>
-        @else
-            <label>
-                First name
-                <input type="text" wire:model="firstName">
-                @error('firstName') <span style="color: red;">{{ $message }}</span> @enderror
-            </label>
-            <br>
+                    @if ($customer_number)
+                        <div class="col mb-3">
+                            <label class="form-label">First name</label>
+                            <input type="text" readonly class="form-control-plaintext" value="{{$firstName}}">
+                        </div>
 
-            <label>
-                Last name
-                <input type="text" wire:model="lastName">
-                @error('lastName') <span style="color: red;">{{ $message }}</span> @enderror
-            </label>
-            <br>
-            <label>
-                Birth date
-                <input type="text" wire:model="birthDate">
-                @error('birthDate') <span style="color: red;">{{ $message }}</span> @enderror
-            </label>
-            <br>
-        @endif
+                        <div class="col mb-3">
+                            <label class="form-label">Last name</label>
+                            <input type="text" readonly class="form-control-plaintext" value="{{$lastName}}">
+                        </div>
 
-        <h3>Car</h3>
+                        <div class="col mb-3">
+                            <label class="form-label">Birth date</label>
+                            <input type="text" readonly class="form-control-plaintext" value="{{$birthDate}}">
+                        </div>
+                    @else
+                        <div class="col mb-3">
+                            <label class="form-label">First name</label>
+                            @error('firstName') <span style="color: red;">{{ $message }}</span> @enderror
+                            <input class="form-control" type="text" wire:model="firstName">
+                        </div>
 
-        <label>
-            Vendor
-            <select wire:model.live="vendorId" wire:change="updateVendorId">
-                    <option value=""></option>
-                @foreach($vendors as $id => $name)
-                    <option value="{{ $id }}">{{ $name }}</option>
-                @endforeach
-            </select>
-        </label>
-        <br>
+                        <div class="col mb-3">
+                            <label class="form-label">Last name</label>
+                            @error('lastName') <span style="color: red;">{{ $message }}</span> @enderror
+                            <input class="form-control" type="text" wire:model="lastName">
+                        </div>
 
-        <label>
-            Model
-            <select wire:model.live="carId" wire:change="updateCarId">
-                <option value=""></option>
-                @if ($cars)
-                    @foreach($cars as $id => $name)
-                        <option value="{{ $id }}">{{ $name }}</option>
-                    @endforeach
-                @endif
-            </select>
-            @if ($carId && $carPrice)
-            {{$carPrice}} €
-            @endif
-            @error('carId') <span style="color: red;">{{ $message }}</span> @enderror
-        </label>
-        <br>
+                        <div class="col mb-3">
+                            <label class="form-label">Birth date</label>
+                            @error('birthDate') <span style="color: red;">{{ $message }}</span> @enderror
+                            <div wire:ignore>
+                                <input class="form-control datepicker" type="text" id="birthDate" wire:model="birthDate">
+                            </div>
 
-        <label>
-            Fuel type
-            <select wire:model.live="fuelTypeId" wire:change="updateFuelTypeId">
-                <option value=""></option>
-                @if ($fuelTypes)
-                    @foreach($fuelTypes as $id => $name)
-                        <option value="{{ $id }}">{{ $name }}</option>
-                    @endforeach
-                @endif
-            </select>
-        </label>
-        <br>
+                        </div>
+                    @endif
+                </div>
 
-        <label>
-            Motor
-            <select wire:model.live="motorId" wire:change="updateMotorId">
-                <option value=""></option>
-                @if ($motors)
-                    @foreach($motors as $id => $name)
-                        <option value="{{ $id }}">{{ $name }}</option>
-                    @endforeach
-                @endif
-            </select>
-        </label>
-        @if ($motorId && $motorPrice)
-            {{$motorPrice}} €
-        @endif
-        @error('motorId') <span style="color: red;">{{ $message }}</span> @enderror
-        <br>
+                <h3>Car</h3>
 
-        <label>
-            Color
-            <input type="text" wire:model="color">
-            @error('color') <span style="color: red;">{{ $message }}</span> @enderror
-        </label>
-        <br>
+                <div class="row">
+                    <div class="col mb-3">
+                        <label class="form-label">Vendor</label>
+                        <select class="form-select" wire:model.live="vendorId" wire:change="updateVendorId">
+                            <option value=""></option>
+                            @foreach($vendors as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-        <h3>Options</h3>
-        @foreach($options as $i => $item)
-            <input type="checkbox" value="{{$item['id']}}" wire:model="selectedOptions" wire:change="onOptionChanged"> {{$item['name']}} - {{$item['price']}} €
-            <br>
-        @endforeach
+                    <div class="col mb-3">
+                        <label class="form-label">Model</label>
+                        @error('carId') <span style="color: red;">{{ $message }}</span> @enderror
+                        <label @class([
+                            'invisible' => !$carId || !$carPrice
+                            ])>
+                                - {{$carPrice}} €
+                        </label>
+                        <select class="form-select" wire:model.live="carId" wire:change="updateCarId">
+                            <option value=""></option>
+                            @if ($cars)
+                                @foreach($cars as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                </div>
 
-        <br><br>
-        @if ($total > 0)
-            <h3>Total</h3>
-            <b>{{$total}}</b> €
-        @endif
-        <br><br>
+                <div class="row">
+                    <div class="col mb-3">
+                        <label class="form-label">Fuel type</label>
+                        <select class="form-select" wire:model.live="fuelTypeId" wire:change="updateFuelTypeId">
+                            <option value=""></option>
+                            @if ($fuelTypes)
+                                @foreach($fuelTypes as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
 
-        <button type="submit">Submit order</button>
-        @if ($customer_number)
-        &nbsp; - &nbsp;
-        <a href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">Customer</a>
-        @endif
-        &nbsp; - &nbsp;
-        <a href="{{route('home')}}">Cancel</a>
-    </form>
+                    <div class="col mb-3">
+                        <label class="form-label">Motor</label>
+                        @error('motorId') <span style="color: red;">{{ $message }}</span> @enderror
+                        <label @class([
+                                    'invisible' => !$motorId || !$motorPrice
+                                ])>
+                                - {{$motorPrice}} €
+                        </label>
+
+                        <select class="form-select"  wire:model.live="motorId" wire:change="updateMotorId">
+                            <option value=""></option>
+                            @if ($motors)
+                                @foreach($motors as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col mb-3">
+                        <h3>Options</h3>
+                        @foreach($options as $i => $item)
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="{{$item['id']}}" wire:model="selectedOptions" wire:change="onOptionChanged"> {{$item['name']}} - {{$item['price']}} €
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="col mb-3">
+                        <label class="form-label">Color</label>
+                        @error('color') <span style="color: red;">{{ $message }}</span> @enderror
+                        <div wire:ignore>
+                            <input id="color" class="form-control" type="text" wire:model="color">
+                        </div>
+                    </div>
+                </div>
+
+                    <div @class([
+                                'mb-3',
+                                'invisible' => $total == 0
+                            ])>
+                        <h3>Total</h3>
+                        <b>{{$total}}</b> €
+                    </div>
+
+                <div class="mb-3">
+                    <button class="btn btn-primary" type="submit">Submit order</button>
+                    @if ($customer_number)
+                    <a class="btn btn-secondary" href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">Customer</a>
+                    @endif
+                    <a class="btn btn-secondary" href="{{route('home')}}">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<x-slot name="head">
+    <script src="/js/jquery-4.0.0.min.js"></script>
+
+    <script src="/js/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="/css/jquery-ui.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.min.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.structure.min.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.theme.min.css" />
+
+    <script src="/js/spectrum.min.js"></script>
+    <link rel="stylesheet" href="/css/spectrum.min.css" />
+
+</x-slot>
+
+<x-slot name="script">
+    <script>
+        $('#birthDate').datepicker({
+            dateFormat: "dd.mm.yy",
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "c-100:c"
+        }).on('click', function(e) {
+            e.preventDefault();
+            $(this).attr("autocomplete", "off");
+        }).on('change', function (e) { @this.set('birthDate', e.target.value); });
+
+        $('#color').spectrum({
+            type: "color",
+            showAlpha: false,
+            showButtons: false,
+            preferredFormat: "hex"
+        }).on('change', function (e) { @this.set('color', e.target.value); });
+
+    </script>
+</x-slot>
