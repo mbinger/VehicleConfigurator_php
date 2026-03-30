@@ -24,70 +24,155 @@ class extends Component
             $this->birthday = Carbon::create($this->order->Customer->birthday)->format('d.m.Y');
         }
     }
+
+    public function deleteOrder()
+    {
+        Order::where('number', $this->order_number)
+            ->firstOrFail()
+            ->delete();
+
+        $this->redirectRoute('kfz.customer.orders', ['number' => $this->order->Customer->number]);
+    }
 };
 ?>
-
 <div>
-    @if ($order)
-        <h1>Order Nr. {{$order_number}} </h1>
 
-        <table>
-            <tr>
-                <td>Customer</td>
-            </tr>
-            <tr>
-                <td>First name</td><td>{{$order->Customer->first_name}}</td>
-            </tr>
-            <tr>
-                <td>Last name</td><td>{{$order->Customer->last_name}}</td>
-            </tr>
-            <tr>
-                <td>Birthday</td><td>{{$this->birthday}}</td>
-            </tr>
-            <tr>
-                <td>Car</td>
-            </tr>
-            <tr>
-                <td>Model</td><td>{{$order->Car->Vendor->name}} {{$order->Car->name}}</td>
-            </tr>
-            <tr>
-                <td>Motor</td><td>{{$order->Motor->FuelType->name}} {{$order->Motor->name}}</td>
-            </tr>
-            <tr>
-                <td>Options</td>
-            </tr>
+<div class="container-fluid d-flex h-100 justify-content-center align-items-center p-0">
+    <div class="row bg-white shadow-sm">
+        <div class="col border rounded p-4">
+
+    @if ($order)
+       <div class="row">
+            <h3>Order details</h3>
+        </div>
+       
+        <div class="row">
+            <div class="col">Number</div>
+        </div>
+
+        <div class="row">
+            <div class="col"><code>{{$order_number}}</code></div>
+        </div>
+
+        <div class="row">
+            <div class="col">Customer</div>
+            <div class="col">
+                <a href="{{route('kfz.customer.orders', ['number' => $order->Customer->number])}}">{{$order->Customer->first_name}} {{$order->Customer->last_name}} {{$this->birthday}}</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col"><strong>Car</strong></div>
+        </div>
+
+        <div class="row">
+            <div class="col">Model</div>
+            <div class="col">{{$order->Car->Vendor->name}} {{$order->Car->name}}</div>
+        </div>
+
+        <div class="row">
+            <div class="col">Motor</div>
+            <div class="col"><span>{{$order->Motor->FuelType->name}} {{$order->Motor->name}}</span></div>
+        </div>
+
+        <div class="row">
+            <div class="col"><strong>Options</strong></div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+
             @if ($order->OrderOptions->isNotEmpty())
-                @foreach($order->OrderOptions as $opt)
-                    <tr>
-                        <td>{{$opt->Option->name}}</td>
-                    </tr>
-                @endforeach
-            @else
-                <tr>
-                    <td>none</td>
-                </tr>
-            @endif
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>Total</td><td>{{$order->price}} €</td>
-            </tr>
-        </table>
-        <br>
-        <br>
-        <a href="{{route('kfz.order.edit', ['number' => $order_number])}}">Edit order</a>
-        &nbsp; - &nbsp;
-        <a href="{{route('kfz.order.delete', ['number' => $order_number])}}">Delete order</a>
-        &nbsp; - &nbsp;
-        <a href="{{route('kfz.customer.orders', ['number' => $order->Customer->number])}}">Customer</a>
-        &nbsp; - &nbsp;
-        <a href="{{route('home')}}">Home</a>
+                    @foreach($order->OrderOptions as $opt)
+                        <span class="badge text-bg-success">{{$opt->Option->name}}</span>
+                    @endforeach
+                @else
+                    none
+                @endif
+            
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col pt-4">
+                <a class="btn btn-primary" href="{{route('kfz.order.edit', ['number' => $order_number])}}">Edit order</a>
+                <a id="btn-delete" class="btn btn-danger">Delete order</a>
+            </div>
+        </div>
     @else
-        <h1>Order Nr. {{$order_number}} not found</h1>
-        <br>
-        <a href="{{route('kfz.order.search')}}">Search order</a>
-        &nbsp; - &nbsp;
-        <a href="{{route('home')}}">Home</a>
+
+    <div class="row">
+        <div class="col">
+            <div class="alert alert-warning" role="alert">
+                <strong>Order Nr. <code>{{$order_number}}</code> not found</strong>
+            </div>
+        </div>     
+    </div>
+
+        <div class="row">
+            <div class="col pt-4">
+                <a class="btn btn-primary" href="{{route('kfz.order.search')}}">New search</a>
+            </div>
+        </div>
+
     @endif
 </div>
+</div>
+
+<div class="d-none">
+    <div id="dialog-confirm" title="Are you sure?">
+    <p>The order will be permanently deleted and cannot be recovered</p>
+    </div>
+    <button id="dialog-confirm-trigger" wire:click="deleteOrder" class="d-none"></button>
+</div>
+
+</div>
+</div>
+
+<x-slot name="head">
+    <script src="/js/jquery-4.0.0.min.js"></script>
+
+    <script src="/js/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="/css/jquery-ui.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.min.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.structure.min.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.theme.min.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.fix.css" />
+</x-slot>
+
+<x-slot name="script">
+    <script>
+        $('#btn-delete').on('click', function(e) 
+        {
+            $( "#dialog-confirm" ).dialog(
+            {
+                classes: {
+                   "ui-dialog": "no-close"
+                },
+                resizable: false,
+                height: "auto",
+                width: 400,
+                modal: true,
+                buttons: 
+                [
+                    {
+                        text: "Cancel",
+                        class: 'btn btn-secondary',
+                        click: function() 
+                        {
+                            $(this).dialog( "close" );
+                        }
+                    },                   
+                    {
+                        text: "Delete",
+                        class: 'btn btn-danger',
+                        click: function() 
+                        {
+                            $('#dialog-confirm-trigger').click();
+                        }
+                    }
+                ]
+            });
+        });
+    </script>
+</x-slot>

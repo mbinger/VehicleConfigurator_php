@@ -246,8 +246,8 @@ class extends Component
         <div class="col border rounded p-4">
             <form wire:submit="save">
                 <div class="row">
-                    <h1 class="text-center">Create order</h1>
-                    <h3>Customer</h3>
+                    <h3 class="text-center">Create order</h3>
+                    <strong>Customer</strong>
 
                     @if ($customer_number)
                         <div class="col mb-3">
@@ -288,7 +288,7 @@ class extends Component
                     @endif
                 </div>
 
-                <h3>Car</h3>
+                <strong>Car</strong>
 
                 <div class="row">
                     <div class="col mb-3">
@@ -355,7 +355,7 @@ class extends Component
 
                 <div class="row">
                     <div class="col mb-3">
-                        <h3>Options</h3>
+                        <strong>Options</strong>
                         @foreach($options as $i => $item)
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="{{$item['id']}}" wire:model="selectedOptions" wire:change="onOptionChanged"> {{$item['name']}} - {{$item['price']}} €
@@ -375,8 +375,8 @@ class extends Component
                                 'mb-3',
                                 'invisible' => $total == 0
                             ])>
-                        <h3>Total</h3>
-                        <b>{{$total}}</b> €
+                        <strong>Total</strong>
+                        {{$total}} €
                     </div>
 
                 <div class="mb-3">
