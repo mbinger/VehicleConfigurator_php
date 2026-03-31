@@ -2,7 +2,8 @@
 
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use \App\Kfz\Text;
+use App\Models\Order;
+use App\Kfz\Text;
 
 new
 #[Layout('layouts::kfz')]
@@ -18,7 +19,13 @@ class extends Component
             'order_number.required' => Text::REQUIRED
         ]);
 
-        $this->redirectRoute('kfz.order.details', ['number' => $this->order_number]);
+        if (Order::where('number', $this->order_number)->select('id')->first())
+        {
+            $this->redirectRoute('kfz.order.edit', ['number' => $this->order_number]);
+        }else
+        {
+            $this->js("showNotFoundDialog();");
+        }
     }
 };
 ?>
@@ -47,8 +54,44 @@ class extends Component
                         <button class="btn btn-primary" type="submit">Search</button>
                     </div>
                 </div>
-
             </form>
         </div>
     </div>
+
+    <div class="d-none">
+        <div id="dialog-notfound" title="Not found">
+            <p>Order not found</p>
+        </div>
+    </div>
 </div>
+
+<x-slot name="head">
+    <script src="/js/jquery-4.0.0.min.js"></script>
+
+    <script src="/js/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="/css/jquery-ui.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.min.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.structure.min.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.theme.min.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.fix.css" />
+</x-slot>
+
+<x-slot name="script">
+    <script>
+        function showNotFoundDialog()
+        {
+            $('#dialog-notfound').dialog({
+                buttons: [
+                    {
+                        text: 'OK',
+                        class: 'btn btn-primary',
+                        click: function() {
+                            $(this).dialog( "close" );
+                        }
+                    }
+                ]
+            });
+        }
+
+    </script>
+</x-slot>

@@ -12,6 +12,7 @@ use \App\Models\Motor;
 use \App\Models\Option;
 use \App\Models\Order;
 use \App\Models\OrderOption;
+use \App\Kfz\Text;
 
 new
 #[Layout('layouts::kfz')]
@@ -40,7 +41,7 @@ class extends Component
     public $oldTotal = 0;
     public $total = 0;
     private $orderNumber;
-
+    public $orderDateStr;
 
     public function mount($number)
     {
@@ -48,6 +49,7 @@ class extends Component
 
         $order = Order::where('number', $number)->firstOrFail();
         $this->oldTotal = $order->price;
+        $this->orderDateStr = Text::formatDate($order->created_at);
 
         $customer = $order->Customer;
         $this->customer_number = $customer->number;
@@ -210,118 +212,157 @@ class extends Component
             }
         });
 
-        $this->redirectRoute('kfz.order.details', ['number' => $this->order_number]);
+        $this->redirectRoute('kfz.customer.orders', ['number' => $this->customer_number]);
     }
 };
 
 ?>
-<form wire:submit="save">
-    <h3>Customer</h3>
-    <br>
-        <label>
-            First name {{$firstName}}
-        </label>
-        <br>
 
-        <label>
-            Last name {{$lastName}}
-        </label>
-        <br>
-        <label>
-            Birth date {{$birthDate}}
-        </label>
+<div class="container-fluid d-flex h-100 justify-content-center align-items-center p-0">
+    <div class="row bg-white shadow-sm">
+        <div class="col border rounded p-4">
+            <form wire:submit="save">
 
-    <h3>Car</h3>
-    <label>
-        Vendor
-        <select wire:model.live="vendorId" wire:change="updateVendorId">
-            <option value=""></option>
-            @foreach($vendors as $id => $name)
-                <option value="{{ $id }}">{{ $name }}</option>
-            @endforeach
-        </select>
-    </label>
-    <br>
+                <div class="row">
+                    <h3 class="text-center">Edit order</h3>
+                        <strong>Customer</strong>
+                
+                        <div class="col mb-3">
+                            <label class="form-label">First name</label>
+                            <input type="text" readonly class="form-control-plaintext" value="{{$firstName}}">
+                        </div>
 
-    <label>
-        Model
-        <select wire:model.live="carId" wire:change="updateCarId">
-            <option value=""></option>
-            @if ($cars)
-                @foreach($cars as $id => $name)
-                    <option value="{{ $id }}">{{ $name }}</option>
-                @endforeach
-            @endif
-        </select>
-        @if ($carId && $carPrice)
-            {{$carPrice}} €
-        @endif
-        @error('carId') <span style="color: red;">{{ $message }}</span> @enderror
-    </label>
-    <br>
+                        <div class="col mb-3">
+                            <label class="form-label">Last name</label>
+                            <input type="text" readonly class="form-control-plaintext" value="{{$lastName}}">
+                        </div>
 
-    <label>
-        Fuel type
-        <select wire:model.live="fuelTypeId" wire:change="updateFuelTypeId">
-            <option value=""></option>
-            @if ($fuelTypes)
-                @foreach($fuelTypes as $id => $name)
-                    <option value="{{ $id }}">{{ $name }}</option>
-                @endforeach
-            @endif
-        </select>
-    </label>
-    <br>
+                        <div class="col mb-3">
+                            <label class="form-label">Birth date</label>
+                            <input type="text" readonly class="form-control-plaintext" value="{{$birthDate}}">
+                        </div>
+                </div>
 
-    <label>
-        Motor
-        <select wire:model.live="motorId" wire:change="updateMotorId">
-            <option value=""></option>
-            @if ($motors)
-                @foreach($motors as $id => $name)
-                    <option value="{{ $id }}">{{ $name }}</option>
-                @endforeach
-            @endif
-        </select>
-    </label>
-    @if ($motorId && $motorPrice)
-        {{$motorPrice}} €
-    @endif
-    @error('motorId') <span style="color: red;">{{ $message }}</span> @enderror
-    <br>
+                <strong>Order</strong>
+                <div class="row">     
+                    <div class="col mb-3">
+                        <label class="form-label">Number</label>
+                        <input type="text" readonly class="form-control-plaintext" value="{{ $order_number }}">
+                    </div>                     
+                </div>
 
-    <label>
-        Color
-        <input type="text" wire:model="color">
-        @error('color') <span style="color: red;">{{ $message }}</span> @enderror
-    </label>
-    <br>
+                <div class="row">     
+              
+                    <div class="col mb-3">
+                        <label class="form-label">Created</label>
+                        <input type="text" readonly class="form-control-plaintext" value="{{ $orderDateStr }}">
+                    </div>
 
-    <h3>Options</h3>
-    @foreach($options as $i => $item)
-        <input type="checkbox" value="{{$item['id']}}" wire:model="selectedOptions" wire:change="onOptionChanged"> {{$item['name']}} - {{$item['price']}} €
-        <br>
-    @endforeach
+                    <div class="col mb-3">
+                        <label class="form-label">Changed</label>
+                        <input type="text" readonly class="form-control-plaintext" value="{{ $orderDateStr }}">
+                    </div>                    
+                </div>                
 
-    @if ($oldTotal == $total)
-        <br><br>
-        <h3>Total</h3>
-        <b>{{$oldTotal}}</b> €
-        <br><br>
-    @else
-        <br><br>
-        <h3>Old total</h3>
-        <b>{{$oldTotal}}</b> €
-        <br><br>
-        <h3>New total</h3>
-        <b>{{$total}}</b> €
-        <br><br>
-    @endif
+                <strong>Car</strong>
 
+                <div class="row">
+                    <div class="col mb-3">
+                        <label class="form-label">Vendor</label>
+                        <select class="form-select" wire:model.live="vendorId" wire:change="updateVendorId">
+                            <option value=""></option>
+                            @foreach($vendors as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-    <button type="submit">Change order</button>
-    &nbsp; - &nbsp;
-    <a href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">Customer</a>
-    &nbsp; - &nbsp;
-    <a href="{{route('home')}}">Cancel</a>
-</form>
+                    <div class="col mb-3">
+                        <label class="form-label">Model</label>
+                        @error('carId') <span style="color: red;">{{ $message }}</span> @enderror
+                        <label @class([
+                            'invisible' => !$carId || !$carPrice
+                            ])>
+                                - {{$carPrice}} €
+                        </label>
+                        <select class="form-select" wire:model.live="carId" wire:change="updateCarId">
+                            <option value=""></option>
+                            @if ($cars)
+                                @foreach($cars as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col mb-3">
+                        <label class="form-label">Fuel type</label>
+                        <select class="form-select" wire:model.live="fuelTypeId" wire:change="updateFuelTypeId">
+                            <option value=""></option>
+                            @if ($fuelTypes)
+                                @foreach($fuelTypes as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+
+                    <div class="col mb-3">
+                        <label class="form-label">Motor</label>
+                        @error('motorId') <span style="color: red;">{{ $message }}</span> @enderror
+                        <label @class([
+                                    'invisible' => !$motorId || !$motorPrice
+                                ])>
+                                - {{$motorPrice}} €
+                        </label>
+
+                        <select class="form-select"  wire:model.live="motorId" wire:change="updateMotorId">
+                            <option value=""></option>
+                            @if ($motors)
+                                @foreach($motors as $id => $name)
+                                    <option value="{{ $id }}">{{ $name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col mb-3">
+                        <strong>Options</strong>
+                        @foreach($options as $i => $item)
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="{{$item['id']}}" wire:model="selectedOptions" wire:change="onOptionChanged"> {{$item['name']}} - {{$item['price']}} €
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="col mb-3">
+                        <label class="form-label">Color</label>
+                        @error('color') <span style="color: red;">{{ $message }}</span> @enderror
+                        <div wire:ignore>
+                            <input id="color" class="form-control" type="text" wire:model="color">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col mb-3">
+                        <strong>Old price</strong>
+                        {{$oldTotal}} €
+                    </div>
+                    <div class="col mb-3">
+                        <strong>New Price</strong>
+                        {{$total}} €
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <button class="btn btn-primary" type="submit">Update order</button>
+                    <a class="btn btn-secondary" href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">Cancel</a>
+                </div>
+            </form>
+         </div>
+    </div>
+</div>

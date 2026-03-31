@@ -91,7 +91,7 @@ return new class extends Migration
            $table->uuid('number')->unique()->index();
            $table->decimal('price');
            $table->unsignedBigInteger('customer_id');
-           $table->foreign('customer_id')->references('id')->on('customers');
+           $table->foreign('customer_id')->references('id')->on('customers')->cascadeOnDelete();
            $table->unsignedBigInteger('car_id');
            $table->foreign('car_id')->references('id')->on('cars');
            $table->unsignedBigInteger('motor_id');

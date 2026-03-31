@@ -39,7 +39,7 @@ class extends Component
     public $selectedOptions = [];
     public $total = 0;
     private $orderNumber;
-
+    private $customerNumber;
 
     public function __construct()
     {
@@ -198,18 +198,25 @@ class extends Component
             if ($this->customer_number)
             {
                 $customer = Customer::where('number', $this->customer_number)->firstOrFail();
+                $this->customerNumber = $customer->number;
             }
             else
             {
                 $customer = Customer::whereRaw('LOWER(last_name) LIKE LOWER(?)', [$this->lastName])
                     ->whereRaw('LOWER(first_name) LIKE LOWER(?)', [$this->firstName])
                     ->whereDate('birthday', $this->birthDateTyped)
-                    ->select('id')
+                    ->select('id', 'number')
                     ->first();
 
-                if (!$customer) {
+                if ($customer) 
+                {
+                    $this->customerNumber = $customer->number;
+                }
+                else
+                {
+                    $this->customerNumber = Str::uuid();
                     $customer = Customer::create([
-                        'number' => Str::uuid(),
+                        'number' => $this->customerNumber,
                         'last_name' => $this->lastName,
                         'first_name' => $this->firstName,
                         'birthday' => $this->birthDateTyped
@@ -234,9 +241,11 @@ class extends Component
                     'option_id' => $item
                 ]);
             }
+
+            $this->customerNumber = $customer->number;
         });
 
-        $this->redirectRoute('kfz.order.details', ['number' => $this->orderNumber]);
+        $this->redirectRoute('kfz.customer.orders', ['number' => $this->customerNumber]);
     }
 };
 
@@ -382,9 +391,10 @@ class extends Component
                 <div class="mb-3">
                     <button class="btn btn-primary" type="submit">Submit order</button>
                     @if ($customer_number)
-                    <a class="btn btn-secondary" href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">Customer</a>
-                    @endif
+                    <a class="btn btn-secondary" href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">Cancel</a>
+                    @else
                     <a class="btn btn-secondary" href="{{route('home')}}">Cancel</a>
+                    @endif
                 </div>
             </form>
         </div>

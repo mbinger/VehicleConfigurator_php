@@ -42,6 +42,15 @@
 
 {{ $slot }}
 
+<div id="load-indicator" class="content-blocker d-none">
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div class="spinner-border" role="status"></div>
+  <div class="p-3">
+    <strong>Loading ...</strong>
+  </div>
+</div>
+</div>
+
 @livewireScripts
 
 {{ $script ?? '' }}
