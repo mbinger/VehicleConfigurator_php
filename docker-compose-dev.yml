@@ -32,7 +32,7 @@ services:
     #restart: always
     networks:
       - backend
-
+      
   mysql:
     container_name: kfz_mysql
     build:
