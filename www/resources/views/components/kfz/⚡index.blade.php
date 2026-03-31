@@ -14,12 +14,12 @@ class extends Component
     <div class="container">
                 <div class="row">
                     <div class="col text-center">
-                        <p style="font-size:300%">Auto shop</p>
+                        <p style="font-size:300%">{{__("Auto shop")}}</p>
                      </div>       
                 </div>
     </div>
     <div class="container-fluid vh-100 d-flex z-index-0"
-        style="background-image: url('/background.jpg'); 
+        style="background-image: url('/images/background.jpg'); 
                 background-size: cover; 
                 background-position: center; 
                 background-repeat: no-repeat;">

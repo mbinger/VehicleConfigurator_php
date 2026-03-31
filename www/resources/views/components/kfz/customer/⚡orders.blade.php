@@ -21,6 +21,10 @@ class extends Component
         {
             $this->birthdayStr = Text::formatDate($this->customer->birthday);
         }
+        else
+        {
+             abort(404); 
+        }
         $this->loadOrders();
     }
 
@@ -51,7 +55,11 @@ class extends Component
         $car = $order->Car->Vendor->name . ' ' . $order->Car->name;
         $price = $order->price;
         $date = Text::formatDate($order->created_at);
-        return "Are you sure to cancel order {$car} for {$price}$ from {$date}?";
+        return __("Are you sure to cancel order :car for :price€ from :date?", [
+            'car' => $car,
+            'price' => $price,
+            'date' => $date
+        ]);
     }
 
     public function deleteOrder($orderNumber)
@@ -67,35 +75,33 @@ class extends Component
     <div class="row bg-white shadow-sm">
         <div class="col border rounded p-4">
 
-    @if ($this->customer)
-
        <div class="row">
             <div class="col">
-                <h3>Customer orders</h3>
+                <h3>{{__("Customer orders")}}</h3>
             </div>   
         </div>
 
         <div class="row">
-            <div class="col"><strong>Customer</strong></div>
+            <div class="col"><strong>{{__("Customer")}}</strong></div>
         </div>
 
         <div class="row">
-            <div class="col">First name</div>
+            <div class="col">{{__("First name")}}</div>
             <div class="col">{{$customer->first_name}}</div>
         </div>
 
         <div class="row">
-            <div class="col">Last name</div>
+            <div class="col">{{__("Last name")}}</div>
             <div class="col">{{$customer->last_name}}</div>
         </div>
 
         <div class="row">
-            <div class="col">Birthday</div>
+            <div class="col">{{__("Birth date")}}</div>
             <div class="col">{{$birthdayStr}}</div>
         </div>
 
         <div class="row pt-4">
-            <div class="col"><strong>Orders</strong></div>
+            <div class="col"><strong>{{__("Orders")}}</strong></div>
         </div>
 
     <div @class([
@@ -113,10 +119,10 @@ class extends Component
             <table class="table">
               <thead>
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Car</th>
-                        <th scope="col">Price €</th>
-                        <th scope="col">Date</th>
+                        <th scope="col">{{__("#")}}</th>
+                        <th scope="col">{{__("Car")}}</th>
+                        <th scope="col">{{__("Price")}} {{__("€")}}</th>
+                        <th scope="col">{{__("Date")}}</th>
                         <th></th>
                     </tr>
              </thead>
@@ -158,40 +164,23 @@ class extends Component
 
         <div class="row">
             <div class="col pt-4">
-                <a class="btn btn-primary" href="{{route('kfz.order.create', ['customer_number' => $customer->number])}}">Create order</a>
-                <button id="btn-delete" class="btn btn-danger">Delete customer</button>
+                <a class="btn btn-primary" href="{{route('kfz.order.create', ['customer_number' => $customer->number])}}">{{__("Create order")}}</a>
+                <button id="btn-delete" class="btn btn-danger">{{__("Delete customer")}}</button>
             </div>
         </div>
-
-    @else
-        <div class="row">
-            <div class="col">
-                <div class="alert alert-warning" role="alert">
-                    <strong>Customer not found</strong>
-                </div>
-            </div>     
-        </div>
-
-        <div class="row">
-            <div class="col pt-4">
-                <a class="btn btn-primary" href="{{route('kfz.customer.search')}}">New search</a>
-            </div>
-        </div>
-
-    @endif
 
         </div>
     </div>
 
     <div class="d-none">
-        <div id="dialog-confirm" title="Are you sure?">
-        <p>Do you want to delete the customer and cancel all its orders?</p>
+        <div id="dialog-confirm">
+        <p>{{__("Do you want to delete the customer and cancel all its orders?")}}</p>
         </div>
         <button id="dialog-confirm-trigger" wire:click="deleteCustomer" class="d-none"></button>
     </div>
 
     <div class="d-none">
-        <div id="dialog-delete-order" title="Are you sure?">
+        <div id="dialog-delete-order">
         <p id='dialog-delete-order-text'></p>
         </div>
     </div>
@@ -199,17 +188,6 @@ class extends Component
     </div>
   </div>
 </div>
-
-<x-slot name="head">
-    <script src="/js/jquery-4.0.0.min.js"></script>
-
-    <script src="/js/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="/css/jquery-ui.css" />
-    <link rel="stylesheet" href="/css/jquery-ui.min.css" />
-    <link rel="stylesheet" href="/css/jquery-ui.structure.min.css" />
-    <link rel="stylesheet" href="/css/jquery-ui.theme.min.css" />
-    <link rel="stylesheet" href="/css/jquery-ui.fix.css" />
-</x-slot>
 
 <x-slot name="script">
     <script>
@@ -227,7 +205,7 @@ class extends Component
                 buttons: 
                 [
                     {
-                        text: "Cancel",
+                        text: "{{__("Cancel")}}",
                         class: 'btn btn-secondary',
                         click: function() 
                         {
@@ -235,7 +213,7 @@ class extends Component
                         }
                     },                   
                     {
-                        text: "Delete",
+                        text: "{{__("Delete")}}",
                         class: 'btn btn-danger',
                         click: function() 
                         {
@@ -263,7 +241,7 @@ class extends Component
                             buttons: 
                             [
                                 {
-                                    text: "Cancel",
+                                    text: "{{__("Cancel")}}",
                                     class: 'btn btn-secondary',
                                     click: function() 
                                     {
@@ -271,7 +249,7 @@ class extends Component
                                     }
                                 },                   
                                 {
-                                    text: "Delete",
+                                    text: "{{__("Delete")}}",
                                     class: 'btn btn-danger',
                                     click: function() 
                                     {

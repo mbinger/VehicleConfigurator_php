@@ -2,7 +2,6 @@
 
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Carbon\Carbon;
 use \App\Models\Customer;
 use \App\Models\Vendor;
 use \App\Models\FuelType;
@@ -35,7 +34,7 @@ class extends Component
     public $motors;
     public $motorId;
     public $motorPrice;
-    public $color = "FFFFFF";
+    public $color = "";
     public $options;
     public $selectedOptions = [];
     public $oldTotal = 0;
@@ -47,7 +46,14 @@ class extends Component
     {
         $this->order_number = $number;
 
-        $order = Order::where('number', $number)->firstOrFail();
+        $order = Order::where('number', $number)->first();
+
+        if (!$order)
+        {
+            abort(404);
+        }
+
+        $this->color = $order->color;
         $this->oldTotal = $order->price;
         $this->orderDateStr = Text::formatDate($order->created_at);
 
@@ -55,8 +61,7 @@ class extends Component
         $this->customer_number = $customer->number;
         $this->firstName = $customer->first_name;
         $this->lastName = $customer->last_name;
-        $this->birthDate = Carbon::create($customer->birthday)->format('d.m.Y');
-
+        $this->birthDate = Text::formatDate($customer->birthday);
         $this->vendors = Vendor::all()->pluck('name', 'id')->toArray();
         $this->options = Option::all()->select('name', 'price', 'id')->toArray();
         $this->vendorId = $order->Car->vendor_id;
@@ -150,7 +155,7 @@ class extends Component
             $this->validate([
                 'carId' => 'required',
                 'motorId' => 'required',
-                'color' => 'required|regex:/^[0-9a-fA-F]{6}$/'
+                'color' => 'required|regex:/^#[0-9a-fA-F]{6}$/'
             ]);
         }
         else
@@ -160,16 +165,16 @@ class extends Component
                 'lastName' => 'required|max:255',
                 'carId' => 'required',
                 'motorId' => 'required',
-                'color' => 'required|regex:/^[0-9a-fA-F]{6}$/'
+                'color' => 'required|regex:/^#[0-9a-fA-F]{6}$/'
             ]);
 
             try
             {
-                $this->birthDateTyped = Carbon::createFromFormat('d.m.Y', $this->birthDate);
+                $this->birthDateTyped = Text::parseDate($this->birthDate);
             }
             catch (\Exception $e)
             {
-                $this->addError('birthDate', 'Should be dd.mm.yyyy');
+                $this->addError('birthDate', __("Should be yyyy-mm-dd"));
                 return;
             }
         }
@@ -224,29 +229,29 @@ class extends Component
             <form wire:submit="save">
 
                 <div class="row">
-                    <h3 class="text-center">Edit order</h3>
-                        <strong>Customer</strong>
+                    <h3 class="text-center">{{__("Edit order")}}</h3>
+                        <strong>{{__("Customer")}}</strong>
                 
                         <div class="col mb-3">
-                            <label class="form-label">First name</label>
+                            <label class="form-label">{{__("First name")}}</label>
                             <input type="text" readonly class="form-control-plaintext" value="{{$firstName}}">
                         </div>
 
                         <div class="col mb-3">
-                            <label class="form-label">Last name</label>
+                            <label class="form-label">{{__("Last name")}}</label>
                             <input type="text" readonly class="form-control-plaintext" value="{{$lastName}}">
                         </div>
 
                         <div class="col mb-3">
-                            <label class="form-label">Birth date</label>
+                            <label class="form-label">{{__("Birth date")}}</label>
                             <input type="text" readonly class="form-control-plaintext" value="{{$birthDate}}">
                         </div>
                 </div>
 
-                <strong>Order</strong>
+                <strong>{{__("Order")}}</strong>
                 <div class="row">     
                     <div class="col mb-3">
-                        <label class="form-label">Number</label>
+                        <label class="form-label">{{__("Number")}}</label>
                         <input type="text" readonly class="form-control-plaintext" value="{{ $order_number }}">
                     </div>                     
                 </div>
@@ -254,21 +259,21 @@ class extends Component
                 <div class="row">     
               
                     <div class="col mb-3">
-                        <label class="form-label">Created</label>
+                        <label class="form-label">{{__("Created")}}</label>
                         <input type="text" readonly class="form-control-plaintext" value="{{ $orderDateStr }}">
                     </div>
 
                     <div class="col mb-3">
-                        <label class="form-label">Changed</label>
+                        <label class="form-label">{{__("Changed")}}</label>
                         <input type="text" readonly class="form-control-plaintext" value="{{ $orderDateStr }}">
                     </div>                    
                 </div>                
 
-                <strong>Car</strong>
+                <strong>{{__("Car")}}</strong>
 
                 <div class="row">
                     <div class="col mb-3">
-                        <label class="form-label">Vendor</label>
+                        <label class="form-label">{{__("Vendor")}}</label>
                         <select class="form-select" wire:model.live="vendorId" wire:change="updateVendorId">
                             <option value=""></option>
                             @foreach($vendors as $id => $name)
@@ -278,7 +283,7 @@ class extends Component
                     </div>
 
                     <div class="col mb-3">
-                        <label class="form-label">Model</label>
+                        <label class="form-label">{{__("Model")}}</label>
                         @error('carId') <span style="color: red;">{{ $message }}</span> @enderror
                         <label @class([
                             'invisible' => !$carId || !$carPrice
@@ -298,7 +303,7 @@ class extends Component
 
                 <div class="row">
                     <div class="col mb-3">
-                        <label class="form-label">Fuel type</label>
+                        <label class="form-label">{{__("Fuel type")}}</label>
                         <select class="form-select" wire:model.live="fuelTypeId" wire:change="updateFuelTypeId">
                             <option value=""></option>
                             @if ($fuelTypes)
@@ -310,7 +315,7 @@ class extends Component
                     </div>
 
                     <div class="col mb-3">
-                        <label class="form-label">Motor</label>
+                        <label class="form-label">{{__("Motor")}}</label>
                         @error('motorId') <span style="color: red;">{{ $message }}</span> @enderror
                         <label @class([
                                     'invisible' => !$motorId || !$motorPrice
@@ -331,7 +336,7 @@ class extends Component
 
                 <div class="row">
                     <div class="col mb-3">
-                        <strong>Options</strong>
+                        <strong>{{__("Options")}}</strong>
                         @foreach($options as $i => $item)
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="{{$item['id']}}" wire:model="selectedOptions" wire:change="onOptionChanged"> {{$item['name']}} - {{$item['price']}} €
@@ -339,7 +344,7 @@ class extends Component
                         @endforeach
                     </div>
                     <div class="col mb-3">
-                        <label class="form-label">Color</label>
+                        <label class="form-label">{{__("Color")}}</label>
                         @error('color') <span style="color: red;">{{ $message }}</span> @enderror
                         <div wire:ignore>
                             <input id="color" class="form-control" type="text" wire:model="color">
@@ -349,20 +354,31 @@ class extends Component
 
                 <div class="row">
                     <div class="col mb-3">
-                        <strong>Old price</strong>
-                        {{$oldTotal}} €
+                        <strong>{{__("Old price")}}</strong>
+                        {{$oldTotal}} {{__("€")}}
                     </div>
                     <div class="col mb-3">
-                        <strong>New Price</strong>
-                        {{$total}} €
+                        <strong>{{__("New price")}}</strong>
+                        {{$total}} {{__("€")}}
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <button class="btn btn-primary" type="submit">Update order</button>
-                    <a class="btn btn-secondary" href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">Cancel</a>
+                    <button class="btn btn-primary" type="submit">{{__("Update order")}}</button>
+                    <a class="btn btn-secondary" href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">{{__("Cancel")}}</a>
                 </div>
             </form>
          </div>
     </div>
 </div>
+
+<x-slot name="script">
+    <script>
+        $('#color').spectrum({
+            type: "color",
+            showAlpha: false,
+            showButtons: false,
+            preferredFormat: "hex"
+        }).on('change', function (e) { @this.set('color', e.target.value); });
+    </script>
+</x-slot>

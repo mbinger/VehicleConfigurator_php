@@ -1,6 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cookie;
+
+Route::get('locale/{locale?}', function ($locale = null) {
+    if (isset($locale) && in_array($locale, config('app.available_locales'))) {
+        //Cookie::queue('locale', $locale, 1440);
+        app()->setLocale($locale);
+        session()->put('locale', $locale);
+        return back();
+    }
+})->name('locale');
 
 Route::livewire('/order/create/{customer_number?}', 'kfz.order.create')->name('kfz.order.create');
 Route::livewire('/order/search', 'kfz.order.search')->name('kfz.order.search');

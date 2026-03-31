@@ -2,17 +2,16 @@
 
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Carbon\Carbon;
-use \App\Models\Customer;
-use \App\Models\Vendor;
-use \App\Models\FuelType;
-use \App\Models\Car;
-use \App\Models\CarMotor;
-use \App\Models\Motor;
-use \App\Models\Option;
-use \App\Models\Order;
-use \App\Models\OrderOption;
-use \App\Kfz\Text;
+use App\Models\Customer;
+use App\Models\Vendor;
+use App\Models\FuelType;
+use App\Models\Car;
+use App\Models\CarMotor;
+use App\Models\Motor;
+use App\Models\Option;
+use App\Models\Order;
+use App\Models\OrderOption;
+use App\Kfz\Text;
 
 new
 #[Layout('layouts::kfz')]
@@ -55,7 +54,7 @@ class extends Component
             $customer = Customer::where('number', $customer_number)->firstOrFail();
             $this->firstName = $customer->first_name;
             $this->lastName = $customer->last_name;
-            $this->birthDate = Carbon::create($customer->birthday)->format('d.m.Y');
+            $this->birthDate = Text::formatDate($customer->birthday);
         }
     }
 
@@ -157,9 +156,9 @@ class extends Component
                 'motorId' => 'required',
                 'color' => 'required|regex:/^#[0-9a-fA-F]{6}$/'
             ],[
-                'carId.required' => Text::REQUIRED,
-                'motorId.required' => Text::REQUIRED,
-                'color.required' => Text::REQUIRED
+                'carId.required' => __("required"),
+                'motorId.required' => __("required"),
+                'color.required' => __("required")
             ]);
         }
         else
@@ -172,21 +171,21 @@ class extends Component
                 'motorId' => 'required',
                 'color' => 'required|regex:/^#[0-9a-fA-F]{6}$/'
             ],[
-                'firstName.required' => Text::REQUIRED,
-                'lastName.required' => Text::REQUIRED,
-                'birthDate.required' => Text::REQUIRED,
-                'carId.required' => Text::REQUIRED,
-                'motorId.required' => Text::REQUIRED,
-                'color.required' => Text::REQUIRED
+                'firstName.required' => __("required"),
+                'lastName.required' => __("required"),
+                'birthDate.required' => __("required"),
+                'carId.required' => __("required"),
+                'motorId.required' => __("required"),
+                'color.required' => __("required")
             ]);
 
             try
             {
-                $this->birthDateTyped = Carbon::createFromFormat('d.m.Y', $this->birthDate);
+                $this->birthDateTyped = Text::parseDate($this->birthDate);
             }
             catch (\Exception $e)
             {
-                $this->addError('birthDate', 'required');
+                $this->addError('birthDate', __("required"));
                 return;
             }
         }
@@ -255,39 +254,39 @@ class extends Component
         <div class="col border rounded p-4">
             <form wire:submit="save">
                 <div class="row">
-                    <h3 class="text-center">Create order</h3>
-                    <strong>Customer</strong>
+                    <h3 class="text-center">{{__("Create order")}}</h3>
+                    <strong>{{__("Customer")}}</strong>
 
                     @if ($customer_number)
                         <div class="col mb-3">
-                            <label class="form-label">First name</label>
+                            <label class="form-label">{{__("First name")}}</label>
                             <input type="text" readonly class="form-control-plaintext" value="{{$firstName}}">
                         </div>
 
                         <div class="col mb-3">
-                            <label class="form-label">Last name</label>
+                            <label class="form-label">{{__("Last name")}}</label>
                             <input type="text" readonly class="form-control-plaintext" value="{{$lastName}}">
                         </div>
 
                         <div class="col mb-3">
-                            <label class="form-label">Birth date</label>
+                            <label class="form-label">{{__("Birth date")}}</label>
                             <input type="text" readonly class="form-control-plaintext" value="{{$birthDate}}">
                         </div>
                     @else
                         <div class="col mb-3">
-                            <label class="form-label">First name</label>
+                            <label class="form-label">{{__("First name")}}</label>
                             @error('firstName') <span style="color: red;">{{ $message }}</span> @enderror
                             <input class="form-control" type="text" wire:model="firstName">
                         </div>
 
                         <div class="col mb-3">
-                            <label class="form-label">Last name</label>
+                            <label class="form-label">{{__("Last name")}}</label>
                             @error('lastName') <span style="color: red;">{{ $message }}</span> @enderror
                             <input class="form-control" type="text" wire:model="lastName">
                         </div>
 
                         <div class="col mb-3">
-                            <label class="form-label">Birth date</label>
+                            <label class="form-label">{{__("Birth date")}}</label>
                             @error('birthDate') <span style="color: red;">{{ $message }}</span> @enderror
                             <div wire:ignore>
                                 <input class="form-control datepicker" type="text" id="birthDate" wire:model="birthDate">
@@ -297,11 +296,11 @@ class extends Component
                     @endif
                 </div>
 
-                <strong>Car</strong>
+                <strong>{{__("Car")}}</strong>
 
                 <div class="row">
                     <div class="col mb-3">
-                        <label class="form-label">Vendor</label>
+                        <label class="form-label">{{__("Vendor")}}</label>
                         <select class="form-select" wire:model.live="vendorId" wire:change="updateVendorId">
                             <option value=""></option>
                             @foreach($vendors as $id => $name)
@@ -311,7 +310,7 @@ class extends Component
                     </div>
 
                     <div class="col mb-3">
-                        <label class="form-label">Model</label>
+                        <label class="form-label">{{__("Model")}}</label>
                         @error('carId') <span style="color: red;">{{ $message }}</span> @enderror
                         <label @class([
                             'invisible' => !$carId || !$carPrice
@@ -331,7 +330,7 @@ class extends Component
 
                 <div class="row">
                     <div class="col mb-3">
-                        <label class="form-label">Fuel type</label>
+                        <label class="form-label">{{__("Fuel type")}}</label>
                         <select class="form-select" wire:model.live="fuelTypeId" wire:change="updateFuelTypeId">
                             <option value=""></option>
                             @if ($fuelTypes)
@@ -343,7 +342,7 @@ class extends Component
                     </div>
 
                     <div class="col mb-3">
-                        <label class="form-label">Motor</label>
+                        <label class="form-label">{{__("Motor")}}</label>
                         @error('motorId') <span style="color: red;">{{ $message }}</span> @enderror
                         <label @class([
                                     'invisible' => !$motorId || !$motorPrice
@@ -364,7 +363,7 @@ class extends Component
 
                 <div class="row">
                     <div class="col mb-3">
-                        <strong>Options</strong>
+                        <strong>{{__("Options")}}</strong>
                         @foreach($options as $i => $item)
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="{{$item['id']}}" wire:model="selectedOptions" wire:change="onOptionChanged"> {{$item['name']}} - {{$item['price']}} €
@@ -372,7 +371,7 @@ class extends Component
                         @endforeach
                     </div>
                     <div class="col mb-3">
-                        <label class="form-label">Color</label>
+                        <label class="form-label">{{__("Color")}}</label>
                         @error('color') <span style="color: red;">{{ $message }}</span> @enderror
                         <div wire:ignore>
                             <input id="color" class="form-control" type="text" wire:model="color">
@@ -384,40 +383,26 @@ class extends Component
                                 'mb-3',
                                 'invisible' => $total == 0
                             ])>
-                        <strong>Total</strong>
+                        <strong>{{__("Total")}}</strong>
                         {{$total}} €
                     </div>
 
                 <div class="mb-3">
-                    <button class="btn btn-primary" type="submit">Submit order</button>
+                    <button class="btn btn-primary" type="submit">{{__("Submit order")}}</button>
                     @if ($customer_number)
-                    <a class="btn btn-secondary" href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">Cancel</a>
+                    <a class="btn btn-secondary" href="{{route('kfz.customer.orders', ['number' => $customer_number])}}">{{__("Cancel")}}</a>
                     @else
-                    <a class="btn btn-secondary" href="{{route('home')}}">Cancel</a>
+                    <a class="btn btn-secondary" href="{{route('home')}}">{{__("Cancel")}}</a>
                     @endif
                 </div>
             </form>
         </div>
     </div>
 </div>
-<x-slot name="head">
-    <script src="/js/jquery-4.0.0.min.js"></script>
-
-    <script src="/js/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="/css/jquery-ui.css" />
-    <link rel="stylesheet" href="/css/jquery-ui.min.css" />
-    <link rel="stylesheet" href="/css/jquery-ui.structure.min.css" />
-    <link rel="stylesheet" href="/css/jquery-ui.theme.min.css" />
-
-    <script src="/js/spectrum.min.js"></script>
-    <link rel="stylesheet" href="/css/spectrum.min.css" />
-
-</x-slot>
 
 <x-slot name="script">
     <script>
         $('#birthDate').datepicker({
-            dateFormat: "dd.mm.yy",
             changeMonth: true,
             changeYear: true,
             yearRange: "c-100:c"
