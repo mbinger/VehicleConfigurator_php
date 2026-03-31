@@ -1,4 +1,4 @@
-FROM php:8.3-fpm
+FROM php:8.3-cli
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
@@ -11,16 +11,14 @@ RUN apt-get update && apt-get install -y \
   && docker-php-ext-configure gd --with-freetype --with-jpeg \
   && docker-php-ext-install -j$(nproc) gd \
   && docker-php-ext-install exif
-
-COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/bin/
-RUN install-php-extensions Xdebug
-
-COPY xdebug.conf /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+  
+RUN apt-get install npm -y
 
 # Copy Composer from the official Composer image
 COPY --from=composer:2.8.5 /usr/bin/composer /usr/bin/composer
 
-# Add custom PHP configuration
-COPY php.ini /usr/local/etc/php/conf.d/40-custom.ini
+COPY install.sh /app/install.sh
 
 WORKDIR /var/www/html
+
+ENTRYPOINT ["/app/install.sh"]

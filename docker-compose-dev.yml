@@ -1,8 +1,9 @@
+name: VehicleCfg
 services:
 
   # Nginx for current project
   nginx:
-    container_name: kfz_nginx
+    container_name: nginx
     #restart: always
     image: nginx:latest
     ports:
@@ -19,7 +20,7 @@ services:
 
   # Php (fpm) for current project
   php:
-    container_name: kfz_php
+    container_name: php
     build:
       context: ./docker/php
       dockerfile: Dockerfile.dev
@@ -34,7 +35,7 @@ services:
       - backend
       
   mysql:
-    container_name: kfz_mysql
+    container_name: mysql
     build:
       context: ./docker/mysql
     volumes:
@@ -45,8 +46,18 @@ services:
     #restart: always
     networks:
       - backend
-
-
+      
+  setup:
+    container_name: setup
+    build:
+      context: ./docker/setup
+      dockerfile: Dockerfile.dev
+    volumes:
+        - ./www:/var/www/html:delegated
+        - vendor-dir:/var/www/html/vendor
+    networks:
+      - backend
+    
 networks:
   backend:
   

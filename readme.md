@@ -1,5 +1,5 @@
 How to install:
-1) Run up.bat
-2) Open dockert desktop, search container "kfz_php", open "exec"
-3) Run install.sh in container "kfz_php":
-./install.sh
+1) install docker desktop
+2) Run up.bat
+3) go to http://localhost in browser
+4) use "setup" container in docker desktop to run your php artisan commands
