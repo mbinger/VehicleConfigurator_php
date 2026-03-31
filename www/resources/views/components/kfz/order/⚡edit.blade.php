@@ -378,7 +378,8 @@ class extends Component
             type: "color",
             showAlpha: false,
             showButtons: false,
-            preferredFormat: "hex"
+            preferredFormat: "hex",
+            color: "{{$color}}"
         }).on('change', function (e) { @this.set('color', e.target.value); });
     </script>
 </x-slot>

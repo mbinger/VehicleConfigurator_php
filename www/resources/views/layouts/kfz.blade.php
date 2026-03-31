@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="/css/jquery-ui.min.css" />
     <link rel="stylesheet" href="/css/jquery-ui.structure.min.css" />
     <link rel="stylesheet" href="/css/jquery-ui.theme.min.css" />
+    <link rel="stylesheet" href="/css/jquery-ui.fix.css" />
 @if(Lang::has("DatepickerLocale", App::getLocale(), false))
     <script src="/js/datepicker-{{App::getLocale()}}.js"></script>
 @endif    
