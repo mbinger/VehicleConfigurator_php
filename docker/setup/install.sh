@@ -5,7 +5,6 @@ if [ ! -f .env ]; then
     cp .env.dev .env
     composer install
     npm install
-    npm run build
     php artisan storage:link
 	
 	echo "wait for database..."
@@ -18,4 +17,4 @@ else
 fi
 
 echo "APPLICATION READY"
-tail -f /dev/null
+npm run dev
